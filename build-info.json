@@ -15,12 +15,12 @@
     }
   },
   "image": "ghcr.io/lizhian/lizhian-caddy",
-  "digest": "sha256:85f9e2264ae0ad607eddc1525d4c94c8f1e1f33e37bbf11c44adb191bd0b5dab",
+  "digest": "sha256:d84b791165c33b6283a73b827fe76477dca803cb32e45f32c3548d0016fab8c2",
   "platforms": [
     "linux/amd64",
     "linux/arm64"
   ],
-  "built_at": "2026-10-08T04:21:30+00:00",
-  "source_commit": "0c62f6295bb76aaa4f42aed17b2f9eac54c7fbba",
-  "workflow_run": "https://github.com/lizhian/lizhian-caddy/actions/runs/37726811550"
+  "built_at": "2026-10-08T06:29:00+00:00",
+  "source_commit": "89b16acfdd752a1f16fee3f1f3838cf8a01cd697",
+  "workflow_run": "https://github.com/lizhian/lizhian-caddy/actions/runs/37737774031"
 }
