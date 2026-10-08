@@ -1,0 +1,27 @@
+services:
+  caddy:
+    image: ghcr.io/lizhian/lizhian-caddy:latest
+    restart: unless-stopped
+    environment:
+      PROXY_DOMAIN: ${PROXY_DOMAIN:?Set PROXY_DOMAIN in .env}
+      PROXY_USER: ${PROXY_USER:-proxyuser}
+      PROXY_PASSWORD: ${PROXY_PASSWORD:?Set PROXY_PASSWORD in .env}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?Set CLOUDFLARE_API_TOKEN in .env}
+      GOMEMLIMIT: 128MiB
+      GOMAXPROCS: "1"
+    ports:
+      - "35890:35890/tcp"
+      - "35891:35891/tcp"
+      - "35891:35891/udp"
+      - "35892:35892/tcp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./data:/data
+      - ./config:/config
+    mem_limit: 192m
+    memswap_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

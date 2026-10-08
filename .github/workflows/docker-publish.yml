@@ -1,0 +1,108 @@
+name: Build and publish Caddy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - README.md
+      - build-info.json
+      - examples/**
+  schedule:
+    # 03:17 Asia/Shanghai, every day.
+    - cron: "17 19 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: caddy-image-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Resolve latest Caddy and plugin revisions
+        id: versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/resolve_versions.py --github-output "$GITHUB_OUTPUT"
+
+      - name: Set image name
+        id: image
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: echo "name=ghcr.io/${REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build, verify and publish both architectures
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          pull: true
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ steps.image.outputs.name }}:latest
+            ${{ steps.image.outputs.name }}:${{ steps.versions.outputs.major }}
+            ${{ steps.image.outputs.name }}:${{ steps.versions.outputs.minor }}
+            ${{ steps.image.outputs.name }}:${{ steps.versions.outputs.image_version }}
+            ${{ steps.image.outputs.name }}:build-${{ github.run_id }}-${{ github.run_attempt }}
+          build-args: |
+            CADDY_BUILDER_IMAGE=caddy:${{ steps.versions.outputs.image_version }}-builder
+            CADDY_RUNTIME_IMAGE=caddy:${{ steps.versions.outputs.image_version }}-alpine
+            CADDY_VERSION=${{ steps.versions.outputs.caddy_version }}
+            FORWARDPROXY_REF=${{ steps.versions.outputs.forwardproxy_ref }}
+            CADDY_L4_REF=${{ steps.versions.outputs.caddy_l4_ref }}
+            CLOUDFLARE_REF=${{ steps.versions.outputs.cloudflare_ref }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.versions.outputs.caddy_version }}
+            io.lizhian.caddy.forwardproxy.revision=${{ steps.versions.outputs.forwardproxy_ref }}
+            io.lizhian.caddy.l4.revision=${{ steps.versions.outputs.caddy_l4_ref }}
+            io.lizhian.caddy.cloudflare.revision=${{ steps.versions.outputs.cloudflare_ref }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Record published image and keep scheduled builds active
+        env:
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+          CADDY_VERSION: ${{ steps.versions.outputs.caddy_version }}
+        run: |
+          python3 scripts/write_build_info.py build-versions.json "$RUNNER_TEMP/build-info.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B main origin/main
+          cp "$RUNNER_TEMP/build-info.json" build-info.json
+          git add build-info.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "chore: publish Caddy ${CADDY_VERSION} image"
+          git push origin HEAD:main

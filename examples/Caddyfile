@@ -1,0 +1,36 @@
+{
+	admin off
+	auto_https disable_redirects
+	order forward_proxy first
+	layer4 {
+		:35892 {
+			@s5 socks5
+			route @s5 {
+				socks5 {
+					commands CONNECT
+					credentials {$PROXY_USER} {$PROXY_PASSWORD}
+				}
+			}
+		}
+	}
+}
+
+(authenticated_proxy) {
+	forward_proxy {
+		basic_auth {$PROXY_USER} {$PROXY_PASSWORD}
+		ports 80 443
+		hide_ip
+		hide_via
+	}
+}
+
+http://:35890 {
+	import authenticated_proxy
+}
+
+:35891, {$PROXY_DOMAIN}:35891 {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+	import authenticated_proxy
+}

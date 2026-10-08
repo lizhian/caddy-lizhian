@@ -1,0 +1,33 @@
+{
+	admin off
+	auto_https disable_redirects
+	order forward_proxy first
+	layer4 {
+		:1080 {
+			@s5 socks5
+			route @s5 {
+				socks5 {
+					commands CONNECT
+					credentials ci-user ci-test-password
+				}
+			}
+		}
+	}
+}
+
+http://:8080 {
+	forward_proxy {
+		basic_auth ci-user ci-test-password
+		ports 80 443
+	}
+}
+
+:8443, proxy.example.invalid:8443 {
+	tls {
+		dns cloudflare ci-placeholder-token-not-used-for-network-requests
+	}
+	forward_proxy {
+		basic_auth ci-user ci-test-password
+		ports 80 443
+	}
+}

@@ -1,0 +1,8 @@
+.env
+*.env
+!*.env.example
+data/
+config/
+__pycache__/
+build-versions.json
+.DS_Store
