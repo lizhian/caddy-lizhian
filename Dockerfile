@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
       --with "github.com/mholt/caddy-l4@${CADDY_L4_REF}" \
       --with "github.com/caddy-dns/cloudflare@${CLOUDFLARE_REF}"
 
-FROM ${CADDY_RUNTIME_IMAGE}
+FROM ${CADDY_RUNTIME_IMAGE} AS runtime
 ARG CADDY_VERSION=latest
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 COPY ci/ /tmp/caddy-ci/
