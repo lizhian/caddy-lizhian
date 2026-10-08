@@ -1,4 +1,4 @@
-name: Build and publish Caddy
+name: Verify upgraded build actions
 
 on:
   push:
@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: caddy-image-publish
+  group: caddy-image-compatibility
   cancel-in-progress: false
 
 jobs:
@@ -66,11 +66,7 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ steps.image.outputs.name }}:latest
-            ${{ steps.image.outputs.name }}:${{ steps.versions.outputs.major }}
-            ${{ steps.image.outputs.name }}:${{ steps.versions.outputs.minor }}
-            ${{ steps.image.outputs.name }}:${{ steps.versions.outputs.image_version }}
-            ${{ steps.image.outputs.name }}:build-${{ github.run_id }}-${{ github.run_attempt }}
+            ${{ steps.image.outputs.name }}:compatibility-${{ github.run_id }}-${{ github.run_attempt }}
           build-args: |
             CADDY_BUILDER_IMAGE=caddy:${{ steps.versions.outputs.image_version }}-builder
             CADDY_RUNTIME_IMAGE=caddy:${{ steps.versions.outputs.image_version }}-alpine
@@ -97,12 +93,12 @@ jobs:
           python3 scripts/write_build_info.py build-versions.json "$RUNNER_TEMP/build-info.json"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git checkout -B main origin/main
+          git fetch origin verify-action-upgrades-20261008
+          git checkout -B verify-action-upgrades-20261008 origin/verify-action-upgrades-20261008
           cp "$RUNNER_TEMP/build-info.json" build-info.json
           git add build-info.json
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "chore: publish Caddy ${CADDY_VERSION} image"
-          git push origin HEAD:main
+          git commit -m "test: verify upgraded Actions with Caddy ${CADDY_VERSION}"
+          git push origin HEAD:verify-action-upgrades-20261008
