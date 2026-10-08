@@ -1,6 +1,7 @@
 services:
   caddy:
-    image: ghcr.io/lizhian/lizhian-caddy:latest
+    image: ghcr.io/lizhian/caddy-lizhian:latest
+    container_name: caddy-lizhian
     restart: unless-stopped
     environment:
       PROXY_DOMAIN: ${PROXY_DOMAIN:?Set PROXY_DOMAIN in .env}

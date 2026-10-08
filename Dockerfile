@@ -25,6 +25,6 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 COPY ci/ /tmp/caddy-ci/
 RUN sh /tmp/caddy-ci/verify.sh "${CADDY_VERSION}" && rm -rf /tmp/caddy-ci
 
-LABEL org.opencontainers.image.source="https://github.com/lizhian/lizhian-caddy" \
-      org.opencontainers.image.title="lizhian-caddy" \
+LABEL org.opencontainers.image.source="https://github.com/lizhian/caddy-lizhian" \
+      org.opencontainers.image.title="caddy-lizhian" \
       org.opencontainers.image.description="Caddy with forwardproxy, caddy-l4 and Cloudflare DNS"
