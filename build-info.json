@@ -1,5 +1,5 @@
 {
-  "caddy_version": "v2.11.8",
+  "caddy_version": "v2.11.9",
   "plugins": {
     "forwardproxy": {
       "repository": "caddyserver/forwardproxy",
@@ -7,7 +7,7 @@
     },
     "caddy_l4": {
       "repository": "mholt/caddy-l4",
-      "commit": "96e1a6bf063c206c3bd09ca6dc4a0484a158d83f"
+      "commit": "ab22be7478d88b220f6f0e188ae472f6fde05904"
     },
     "cloudflare": {
       "repository": "caddy-dns/cloudflare",
@@ -15,12 +15,12 @@
     }
   },
   "image": "ghcr.io/lizhian/caddy-lizhian",
-  "digest": "sha256:c45f96c96f5f110bc9c83888a562548d8c6709723d37431b2c48e2b378aab5e5",
+  "digest": "sha256:814a7625e9b512dfcd1326f9d6011c0cae4f5b42632c78e4011fd0f2500b3861",
   "platforms": [
     "linux/amd64",
     "linux/arm64"
   ],
-  "built_at": "2026-11-05T00:28:28+00:00",
-  "source_commit": "46e090ff8ac8104c619ae9744e7f8ff9abff93c4",
-  "workflow_run": "https://github.com/lizhian/caddy-lizhian/actions/runs/41941090179"
+  "built_at": "2026-11-06T00:25:31+00:00",
+  "source_commit": "4246d88cab9a51abfe8ff246ab3a00ed63057a5c",
+  "workflow_run": "https://github.com/lizhian/caddy-lizhian/actions/runs/42136307973"
 }
